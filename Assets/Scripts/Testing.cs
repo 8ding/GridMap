@@ -1,88 +1,81 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using UnityEngine;
+
 
 public class Testing : MonoBehaviour
 {
     // Start is called before the first frame update
-    private Grid grid;
+    // private MyGrid<HeatMapGridObject> grid;
+    // [SerializeField] private HeatMapVisual heatMapVisual;
+    // [SerializeField] private HeatMapGenericVisual heatMapGenericVisual;
+    // [SerializeField] private Vector3 originPosition;
 
-    [SerializeField] private Vector3 originPosition;
+    
     void Start()
     {
-        grid = new Grid(1, 1,10f,new Vector3(0,0));
-        HeatMapVisual heatMapVisual = new HeatMapVisual(grid, GetComponent<MeshFilter>());
+        //createGridObject是一个有返回值的事件，这个事件是构造函数的一个参数，在构造函数中可以利用这个参数进行一些操作，
+        //但是在构造函数中只负责传参数，而在这个具体应用的地方则将泛型实例化，并决定这个事件注册了什么函数。
+        //而在那边的构造函数中直接触发事件就调用了这个函数，也就调用了泛型的实例，在这里就是返回了HeatMapGridObject这个实例构造后的结果
+        //grid = new MyGrid<HeatMapGridObject>(100, 100, 5f, new Vector3(0, 0),
+            // ((MyGrid<HeatMapGridObject> g, int x, int y) => new HeatMapGridObject(g, x, y)));
+        // heatMapVisual.SetGrid(grid);
+        //heatMapGenericVisual.SetGrid(grid);
+        Pathfinding pathfinding = new Pathfinding(10, 10);
     }
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
-                -1 * Camera.main.transform.position.z));
-            grid.setValue(mousePosition, 56);
-        }
+    // private void Update()
+    // {
+    //     if (Input.GetMouseButtonDown(0))
+    //     {
+    //         var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
+    //             -1 * Camera.main.transform.position.z));
+    //         // grid.setValue(mousePosition,new HeatMapGridObject(5));
+    //         HeatMapGridObject gridObject = grid.GetGridObject(mousePosition);
+    //         if (gridObject != null)
+    //         {
+    //             gridObject.AddValue(5);
+    //         }
+    //     }
+    //     if (Input.GetMouseButtonDown(1))
+    //     {
+    //         var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
+    //             -1 * Camera.main.transform.position.z));
+    //     }
+    // }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
-                -1 * Camera.main.transform.position.z));
-            Debug.Log(grid.GetValue(mousePosition));
-        }
-    }
+}
+
+public class HeatMapGridObject
+{
+    private int value;
+    private const int MIN = 0;
+    private const int MAX = 100;
+    private int x;
+    private int y;
+    private MyGrid<HeatMapGridObject> grid;
     
-
-    private class HeatMapVisual
+    public HeatMapGridObject(MyGrid<HeatMapGridObject> grid,int x, int y)
     {
-        private Grid grid;
-        private Mesh mesh;
+        this.grid = grid;
+        this.x = x;
+        this.y = y;
+    }
+    public void AddValue(int addValue)
+    {
+        value += addValue;
+        value = Mathf.Clamp(value, MIN, MAX);
+        grid.OnTriggerGridObjectChanged(x,y);
+    }
 
-        public HeatMapVisual(Grid grid,MeshFilter meshFilter)
-        {
-            this.grid = grid;
-            mesh = new Mesh();
-            UpDateHeatMapVisual();
-            Debug.Log(mesh.vertices[0]);
-            Debug.Log(grid.GetWorldPosition(0,0));
-            Debug.DrawLine(mesh.vertices[0], grid.GetWorldPosition(0, 0), Color.blue, 100f);
-            meshFilter.mesh = mesh;
-        }
-
-        public void UpDateHeatMapVisual()
-        {
-            Vector3[] vertices;
-            Vector2[] uv;
-            int[] triangles;
-            MeshUtils.CreateEmptyMeshArrays(grid.GetWidth() * grid.GetHeight(), out vertices, out uv, out triangles);
-            
-
-            // vertices[0] = grid.GetWorldPosition(0, 0);
-            // vertices[1] = grid.GetWorldPosition(0, 0) + new Vector3(0, grid.GetCellSize());
-            // vertices[2] = grid.GetWorldPosition(0, 0) + new Vector3(grid.GetCellSize(), grid.GetCellSize());
-            // vertices[3] = grid.GetWorldPosition(0, 0) + new Vector3(grid.GetCellSize(), 0);
-            // uv[0] = new Vector2(0, 0);
-            // uv[1] = new Vector2(0, 1);
-            // uv[2] = new Vector2(1, 1);
-            // uv[3] = new Vector2(1, 0);
-            //
-            // triangles[0] = 0;
-            // triangles[1] = 1;
-            // triangles[2] = 2;
-            // triangles[3] = 0;
-            // triangles[4] = 2;
-            // triangles[5] = 3;
-            for (int x = 0; x < grid.GetWidth(); x++)
-            {
-                for (int y = 0; y < grid.GetHeight(); y++)
-                {
-                    int index = x * grid.GetHeight() + y;
-                    MeshUtils.AddToMeshArrays(vertices,uv,triangles,index,grid.GetWorldPosition(x,y),grid.GetCellSize());
-                }
-            }
-            mesh.vertices = vertices;
-            mesh.uv = uv;
-            mesh.triangles = triangles;
-        }
+    public float GetValueNormalized()
+    {
+        return (float) value / MAX;
+    }
+    public override string ToString()
+    {
+        return value.ToString();
     }
 }
