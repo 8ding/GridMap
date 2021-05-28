@@ -12,7 +12,7 @@ public class Testing : MonoBehaviour
     // [SerializeField] private HeatMapVisual heatMapVisual;
     // [SerializeField] private HeatMapGenericVisual heatMapGenericVisual;
     // [SerializeField] private Vector3 originPosition;
-
+    private Pathfinding pathfinding;
     
     void Start()
     {
@@ -23,7 +23,7 @@ public class Testing : MonoBehaviour
             // ((MyGrid<HeatMapGridObject> g, int x, int y) => new HeatMapGridObject(g, x, y)));
         // heatMapVisual.SetGrid(grid);
         //heatMapGenericVisual.SetGrid(grid);
-        Pathfinding pathfinding = new Pathfinding(10, 10);
+        pathfinding = new Pathfinding(10, 10);
     }
 
     // private void Update()
@@ -45,7 +45,41 @@ public class Testing : MonoBehaviour
     //             -1 * Camera.main.transform.position.z));
     //     }
     // }
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
+                -1 * Camera.main.transform.position.z));
+            pathfinding.GetGrid().GetXY(mousePosition, out int x, out int y);
+            List<PathNode> path = pathfinding.FindPath(0, 0, x, y);
+            if (path != null)
+            {
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    Vector3 begin = pathfinding.GetGrid().GetWorldPosition(path[i].x, path[i].y) +
+                                    (Vector3) (Vector2.one * 5f);
+                    Vector3 end = pathfinding.GetGrid().GetWorldPosition(path[i + 1].x, path[i + 1].y) +
+                                  (Vector3) (Vector2.one * 5f);
 
+                    Debug.DrawLine(begin,
+                        end,Color.cyan,1f);
+                    
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
+                -1 * Camera.main.transform.position.z));
+            pathfinding.GetGrid().GetXY(mousePosition, out int x, out int y);
+            pathfinding.GetNode(x,y).setWalkable(!pathfinding.GetGrid().GetGridObject(x,y).isWalkable);
+            Debug.DrawLine(pathfinding.GetGrid().GetWorldPosition(x, y),
+                pathfinding.GetGrid().GetWorldPosition(x, y) + new Vector3(pathfinding.GetGrid().GetCellSize(),
+                    pathfinding.GetGrid().GetCellSize()), Color.yellow, 100f);
+        }
+    }
 }
 
 public class HeatMapGridObject

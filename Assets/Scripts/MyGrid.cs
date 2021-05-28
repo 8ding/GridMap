@@ -78,7 +78,7 @@ public class MyGrid<TGridObject>
         return new Vector3(x,y) * cellSize + originPosition;
     }
 
-    void GetXY(Vector3 worldPosition, out int x, out int y)
+    public void GetXY(Vector3 worldPosition, out int x, out int y)
     {
         x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
         y = Mathf.FloorToInt((worldPosition - originPosition).y / cellSize);
@@ -141,6 +141,11 @@ public class MyGrid<TGridObject>
     public int GetWidth()
     {
         return width;
+    }
+
+    public void SetWalkable(bool walkable)
+    {
+        
     }
 
     // public void AddValue(Vector3 worldPosition,int value)

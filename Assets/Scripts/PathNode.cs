@@ -8,6 +8,7 @@ public class PathNode
     public int x;
     public int y;
 
+    public bool isWalkable;
     public int gCost;
     public int hCost;
     public int fCost;
@@ -27,5 +28,10 @@ public class PathNode
     public override string ToString()
     {
         return x + "," + y;
+    }
+
+    public void setWalkable(bool isWalkable)
+    {
+        this.isWalkable = isWalkable;
     }
 }
